@@ -12,10 +12,12 @@ import org.unimag.api.ApiOperacionBD;
 import org.unimag.dto.BusDto;
 import org.unimag.dto.ConductorDto;
 import org.unimag.dto.RutaDto;
+import org.unimag.dto.TiqueteDto;
 import org.unimag.dto.ViajeDto;
 import org.unimag.modelo.Bus;
 import org.unimag.modelo.Conductor;
 import org.unimag.modelo.Ruta;
+import org.unimag.modelo.Tiquete;
 import org.unimag.modelo.Viaje;
 import org.unimag.recurso.constante.Persistencia;
 import org.unimag.recurso.utilidad.GestorImagen;
@@ -47,9 +49,9 @@ public class ViajeServicio implements ApiOperacionBD<ViajeDto, Integer> {
 
     @Override
     public ViajeDto inserInto(ViajeDto dto, String ruta) {
-        Ruta objRuta = new Ruta(dto.getRutaViaje().getIdRuta(), "", "", 0.0, "", "");
-        Conductor objConductor = new Conductor(dto.getConductorViaje().getIdConductor(), "", (short) 0, false, "", "");
-        Bus objBus = new Bus(dto.getBusViaje().getIdBus(), "", null, "", "");
+        Ruta objRuta = new Ruta(dto.getRutaViaje().getIdRuta(), "", "", 0.0, "", "", 0);
+        Conductor objConductor = new Conductor(dto.getConductorViaje().getIdConductor(), "", (short) 0, false, "", "", 0);
+        Bus objBus = new Bus(dto.getBusViaje().getIdBus(), "", null, "", "", 0);
 
         Viaje objViaje = new Viaje();
         objViaje.setIdViaje(getSerial());
@@ -102,6 +104,9 @@ public class ViajeServicio implements ApiOperacionBD<ViajeDto, Integer> {
         BusServicio busServicio = new BusServicio();
         List<BusDto> arrBuses = busServicio.selectFrom();
 
+        TiqueteServicio tiqueteServicio = new TiqueteServicio();
+        Map<Integer, Integer> arrCantidades = tiqueteServicio.tiquetesPorViaje();
+
         Map<Integer, RutaDto> mapRutas = new HashMap<>();
         for (RutaDto r : arrRutas) mapRutas.put(r.getIdRuta(), r);
 
@@ -135,6 +140,7 @@ public class ViajeServicio implements ApiOperacionBD<ViajeDto, Integer> {
                 obj.setEstadoViaje(Boolean.parseBoolean(columnas[6].trim()));
                 obj.setNombreImagenPublicoViaje(columnas[7].trim());
                 obj.setNombreImagenPrivadoViaje(columnas[8].trim());
+                obj.setCantidadTiqueteViaje(arrCantidades.getOrDefault(obj.getIdViaje(), 0));
 
                 arregloViajeDtos.add(obj);
 
@@ -172,6 +178,76 @@ public class ViajeServicio implements ApiOperacionBD<ViajeDto, Integer> {
         }
         return correcto;
     }
+
+    public Map<Integer, Integer> viajesPorRuta() {
+        Map<Integer, Integer> arrCantidades = new HashMap<>();
+        List<String> arregloDatos = miArchivo.obtenerDatos();
+
+        for (String cadena : arregloDatos) {
+            try {
+                cadena = cadena.replace("@", "");
+                String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
+
+                if (columnas.length < 2) {
+                    continue;
+                }
+
+                int idRuta = Integer.parseInt(columnas[1].trim());
+                arrCantidades.put(idRuta, arrCantidades.getOrDefault(idRuta, 0) + 1);
+
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException error) {
+                Logger.getLogger(ViajeServicio.class.getName()).log(Level.SEVERE, null, error);
+            }
+        }
+        return arrCantidades;
+    }
+
+    public Map<Integer, Integer> viajesPorConductor() {
+        Map<Integer, Integer> arrCantidades = new HashMap<>();
+        List<String> arregloDatos = miArchivo.obtenerDatos();
+
+        for (String cadena : arregloDatos) {
+            try {
+                cadena = cadena.replace("@", "");
+                String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
+
+                if (columnas.length < 3) {
+                    continue;
+                }
+
+                int idConductor = Integer.parseInt(columnas[2].trim());
+                arrCantidades.put(idConductor, arrCantidades.getOrDefault(idConductor, 0) + 1);
+
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException error) {
+                Logger.getLogger(ViajeServicio.class.getName()).log(Level.SEVERE, null, error);
+            }
+        }
+        return arrCantidades;
+    }
+
+    public Map<Integer, Integer> viajesPorBus() {
+        Map<Integer, Integer> arrCantidades = new HashMap<>();
+        List<String> arregloDatos = miArchivo.obtenerDatos();
+
+        for (String cadena : arregloDatos) {
+            try {
+                cadena = cadena.replace("@", "");
+                String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
+
+                if (columnas.length < 4) {
+                    continue;
+                }
+
+                int idBus = Integer.parseInt(columnas[3].trim());
+                arrCantidades.put(idBus, arrCantidades.getOrDefault(idBus, 0) + 1);
+
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException error) {
+                Logger.getLogger(ViajeServicio.class.getName()).log(Level.SEVERE, null, error);
+            }
+        }
+        return arrCantidades;
+    }
+
 
     @Override
     public ViajeDto getOne(Integer codigo) {

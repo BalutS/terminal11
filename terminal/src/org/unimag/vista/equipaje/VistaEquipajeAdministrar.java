@@ -6,7 +6,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -24,12 +26,14 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.unimag.controlador.equipaje.EquipajeControladorEliminar;
 import org.unimag.controlador.equipaje.EquipajeControladorListar;
 import org.unimag.dto.EquipajeDto;
 import org.unimag.dto.PasajeroDto;
 import org.unimag.recurso.constante.Configuracion;
 import org.unimag.recurso.utilidad.Icono;
 import org.unimag.recurso.utilidad.Marco;
+import org.unimag.recurso.utilidad.Mensaje;
 
 public class VistaEquipajeAdministrar extends StackPane {
 
@@ -40,6 +44,8 @@ public class VistaEquipajeAdministrar extends StackPane {
     private final Button btnEliminar;
     private final Button btnActualizar;
     private final Button btnCancelar;
+    private Text titulo;
+    private final ObservableList<EquipajeDto> datosTabla = FXCollections.observableArrayList();
 
     private static final String ESTILO_CENTRAR = "-fx-alignment: CENTER;";
     private static final String ESTILO_DERECHA = "-fx-alignment: CENTER-RIGHT;";
@@ -85,7 +91,7 @@ public class VistaEquipajeAdministrar extends StackPane {
                 miEscenario.heightProperty().multiply(0.05));
 
         int cant = EquipajeControladorListar.obtenerCantidadEquipaje();
-        Text titulo = new Text("ADMINISTRAR EQUIPAJES (" + cant + ")");
+        titulo = new Text("ADMINISTRAR EQUIPAJES (" + cant + ")");
         titulo.setFill(Color.web(Configuracion.MORADO_OSCURO));
         titulo.setFont(Font.font("Rockwell", FontWeight.BOLD, 28));
 
@@ -180,7 +186,7 @@ public class VistaEquipajeAdministrar extends StackPane {
         configurarColumnas();
 
         List<EquipajeDto> arrEquipaje = EquipajeControladorListar.obtenerEquipaje();
-        ObservableList<EquipajeDto> datosTabla = FXCollections.observableArrayList(arrEquipaje);
+        datosTabla.setAll(arrEquipaje);
 
         miTabla.setItems(datosTabla);
         miTabla.setPlaceholder(new Text("No hay equipajes registrados"));
@@ -200,6 +206,48 @@ public class VistaEquipajeAdministrar extends StackPane {
     }
 
     private void crearBotones() {
+
+        btnCancelar.setOnAction(e -> {
+            miTabla.getSelectionModel().clearSelection();
+        });
+
+        btnEliminar.setOnAction(e -> {
+            if (miTabla.getSelectionModel().getSelectedItem() == null) {
+                Mensaje.mostrar(Alert.AlertType.WARNING,
+                        miEscenario, "Atención", "Debe seleccionar un equipaje.");
+            } else {
+                EquipajeDto equipajeSeleccionado = miTabla.getSelectionModel().getSelectedItem();
+
+                String mensaje = "¿Está seguro de que desea eliminar el equipaje con ID: "
+                        + equipajeSeleccionado.getIdEquipaje() + "?";
+
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Confirmar Eliminación");
+                alert.setHeaderText(null);
+                alert.setContentText(mensaje);
+                alert.initOwner(miEscenario);
+
+                if (alert.showAndWait().get() == ButtonType.OK) {
+                    int posi = miTabla.getSelectionModel().getSelectedIndex();
+                    if (EquipajeControladorEliminar.borrar(posi)) {
+                        int cant = EquipajeControladorListar.obtenerCantidadEquipaje();
+                        titulo.setText("ADMINISTRAR EQUIPAJES (" + cant + ")");
+
+                        datosTabla.setAll(EquipajeControladorListar.obtenerEquipaje());
+                        miTabla.refresh();
+
+                        Mensaje.mostrar(Alert.AlertType.INFORMATION,
+                                miEscenario, "Éxito", "El equipaje ha sido eliminado correctamente.");
+                    } else {
+                        Mensaje.mostrar(Alert.AlertType.ERROR,
+                                miEscenario, "Error", "No se pudo eliminar el equipaje.");
+                    }
+                } else {
+                    miTabla.getSelectionModel().clearSelection();
+                }
+            }
+        });
+
         HBox cajaBotones = new HBox(20);
         cajaBotones.setAlignment(Pos.CENTER);
         cajaBotones.getChildren().addAll(btnActualizar, btnEliminar, btnCancelar);

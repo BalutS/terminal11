@@ -45,7 +45,7 @@ public class BusServicio implements ApiOperacionBD<BusDto, Integer> {
     public BusDto inserInto(BusDto dto, String ruta) {
         Empresa objEmpresa = new Empresa(dto.getEmpresaBus().getIdEmpresa(),
                 dto.getEmpresaBus().getNombreEmpresa(),
-                "", ""
+                "", "", 0
         );
 
         Bus objBus = new Bus();
@@ -85,6 +85,9 @@ public class BusServicio implements ApiOperacionBD<BusDto, Integer> {
         EmpresaServicio empresaServicio = new EmpresaServicio();
         List<EmpresaDto> arrEmpresas = empresaServicio.selectFrom();
 
+        ViajeServicio viajeServicio = new ViajeServicio();
+        Map<Integer, Integer> arrCantidades = viajeServicio.viajesPorBus();
+
         Map<Integer, EmpresaDto> mapEmpresas = new HashMap<>();
         for (EmpresaDto empresa : arrEmpresas) {
             mapEmpresas.put(empresa.getIdEmpresa(), empresa);
@@ -116,6 +119,7 @@ public class BusServicio implements ApiOperacionBD<BusDto, Integer> {
                 objBusDto.setEmpresaBus(empresaBus);
                 objBusDto.setNombreImagenPublicoBus(imgPublica);
                 objBusDto.setNombreImagenPrivadoBus(imgPrivada);
+                objBusDto.setCantidadViajeBus(arrCantidades.getOrDefault(idBus, 0));
 
                 arregloBusDtos.add(objBusDto);
 
@@ -151,6 +155,29 @@ public class BusServicio implements ApiOperacionBD<BusDto, Integer> {
             Logger.getLogger(BusServicio.class.getName()).log(Level.SEVERE, null, ex);
         }
         return correcto;
+    }
+
+    public Map<Integer, Integer> busesPorEmpresa() {
+        Map<Integer, Integer> arrCantidades = new HashMap<>();
+        List<String> arregloDatos = miArchivo.obtenerDatos();
+
+        for (String cadena : arregloDatos) {
+            try {
+                cadena = cadena.replace("@", "");
+                String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
+
+                if (columnas.length < 3) {
+                    continue;
+                }
+
+                int idEmpresa = Integer.parseInt(columnas[2].trim());
+                arrCantidades.put(idEmpresa, arrCantidades.getOrDefault(idEmpresa, 0) + 1);
+
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException error) {
+                Logger.getLogger(BusServicio.class.getName()).log(Level.SEVERE, null, error);
+            }
+        }
+        return arrCantidades;
     }
 
     @Override

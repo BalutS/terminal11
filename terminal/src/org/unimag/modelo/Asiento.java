@@ -7,6 +7,15 @@ public class Asiento {
     private Boolean estadoAsiento;
     private String nombreImagenPublicoAsiento;
     private String nombreImagenPrivadoAsiento;
+    private int cantidadTiqueteAsiento;
+
+    public int getCantidadTiqueteAsiento() {
+        return cantidadTiqueteAsiento;
+    }
+
+    public void setCantidadTiqueteAsiento(int cantidadTiqueteAsiento) {
+        this.cantidadTiqueteAsiento = cantidadTiqueteAsiento;
+    }
 
     /**
      * @return the idAsiento
@@ -78,12 +87,13 @@ public class Asiento {
         this.nombreImagenPrivadoAsiento = nombreImagenPrivadoAsiento;
     }
 
-    public Asiento(int idAsiento, Bus busAsiento, Boolean estadoAsiento, String nombreImagenPublicoAsiento, String nombreImagenPrivadoAsiento) {
+    public Asiento(int idAsiento, Bus busAsiento, Boolean estadoAsiento, String nombreImagenPublicoAsiento, String nombreImagenPrivadoAsiento, int cantidadTiqueteAsiento) {
         this.idAsiento = idAsiento;
         this.busAsiento = busAsiento;
         this.estadoAsiento = estadoAsiento;
         this.nombreImagenPublicoAsiento = nombreImagenPublicoAsiento;
         this.nombreImagenPrivadoAsiento = nombreImagenPrivadoAsiento;
+        this.cantidadTiqueteAsiento = cantidadTiqueteAsiento;
     }
 
     public Asiento() {

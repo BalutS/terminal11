@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.unimag.api.ApiOperacionBD;
@@ -78,6 +79,9 @@ public class RutaServicio implements ApiOperacionBD<RutaDto, Integer> {
 
     @Override
     public List<RutaDto> selectFrom() {
+        ViajeServicio viajeServicio = new ViajeServicio();
+        Map<Integer, Integer> arrCantidades = viajeServicio.viajesPorRuta();
+
         List<RutaDto> arregloRutaDtos = new ArrayList<>();
         List<String> arregloDatos = miArchivo.obtenerDatos();
 
@@ -97,6 +101,7 @@ public class RutaServicio implements ApiOperacionBD<RutaDto, Integer> {
                 objRutaDto.setTarifaRuta(Double.valueOf(columnas[3].trim()));
                 objRutaDto.setNombreImagenPublicoRuta(columnas[4].trim());
                 objRutaDto.setNombreImagenPrivadoRuta(columnas[5].trim());
+                objRutaDto.setCantidadViajeRuta(arrCantidades.getOrDefault(objRutaDto.getIdRuta(), 0));
 
                 arregloRutaDtos.add(objRutaDto);
                 

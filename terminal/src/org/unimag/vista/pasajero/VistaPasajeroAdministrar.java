@@ -4,7 +4,9 @@ import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -22,11 +24,13 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.unimag.controlador.pasajero.PasajeroControladorEliminar;
 import org.unimag.controlador.pasajero.PasajeroControladorListar;
 import org.unimag.dto.PasajeroDto;
 import org.unimag.recurso.constante.Configuracion;
 import org.unimag.recurso.utilidad.Icono;
 import org.unimag.recurso.utilidad.Marco;
+import org.unimag.recurso.utilidad.Mensaje;
 
 public class VistaPasajeroAdministrar extends StackPane {
 
@@ -37,6 +41,8 @@ public class VistaPasajeroAdministrar extends StackPane {
     private final Button btnEliminar;
     private final Button btnActualizar;
     private final Button btnCancelar;
+    private Text titulo;
+    private final ObservableList<PasajeroDto> datosTabla = FXCollections.observableArrayList();
 
     private static final String ESTILO_CENTRAR = "-fx-alignment: CENTER;";
     private static final String ESTILO_IZQUIERDA = "-fx-alignment: CENTER-LEFT;";
@@ -83,7 +89,7 @@ public class VistaPasajeroAdministrar extends StackPane {
                 miEscenario.heightProperty().multiply(0.05));
 
         int cant = PasajeroControladorListar.obtenerCantidadPasajero();
-        Text titulo = new Text("ADMINISTRAR PASAJEROS (" + cant + ")");
+        titulo = new Text("ADMINISTRAR PASAJEROS (" + cant + ")");
         titulo.setFill(Color.web(Configuracion.MORADO_OSCURO));
         titulo.setFont(Font.font("Rockwell", FontWeight.BOLD, 28));
 
@@ -179,7 +185,7 @@ public class VistaPasajeroAdministrar extends StackPane {
         configurarColumnas();
 
         List<PasajeroDto> arrPasajero = PasajeroControladorListar.obtenerPasajeros();
-        ObservableList<PasajeroDto> datosTabla = FXCollections.observableArrayList(arrPasajero);
+        datosTabla.setAll(arrPasajero);
 
         miTabla.setItems(datosTabla);
         miTabla.setPlaceholder(new Text("No hay pasajeros registrados"));
@@ -199,6 +205,54 @@ public class VistaPasajeroAdministrar extends StackPane {
     }
     
     private void crearBotones() {
+
+        btnCancelar.setOnAction(e -> {
+            miTabla.getSelectionModel().clearSelection();
+        });
+
+        btnEliminar.setOnAction(e -> {
+             if (miTabla.getSelectionModel().getSelectedItem() == null) {
+                Mensaje.mostrar(Alert.AlertType.WARNING,
+                        miEscenario, "Atención", "Debe seleccionar un pasajero.");
+            } else {
+                PasajeroDto pasajeroSeleccionado = miTabla.getSelectionModel().getSelectedItem();
+
+                if (pasajeroSeleccionado.getCantidadEquipajePasajero() > 0 || pasajeroSeleccionado.getCantidadTiquetePasajero() > 0) {
+                    Mensaje.mostrar(Alert.AlertType.WARNING,
+                            miEscenario, "Advertencia", "No se puede eliminar el pasajero porque tiene equipajes o tiquetes asociados.");
+                    return;
+                }
+
+                String mensaje = "¿Está seguro de que desea eliminar al pasajero con ID: "
+                        + pasajeroSeleccionado.getIdPasajero() + "?";
+
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Confirmar Eliminación");
+                alert.setHeaderText(null);
+                alert.setContentText(mensaje);
+                alert.initOwner(miEscenario);
+
+                if (alert.showAndWait().get() == ButtonType.OK) {
+                    int posi = miTabla.getSelectionModel().getSelectedIndex();
+                    if (PasajeroControladorEliminar.borrar(posi)) {
+                        int cant = PasajeroControladorListar.obtenerCantidadPasajero();
+                        titulo.setText("ADMINISTRAR PASAJEROS (" + cant + ")");
+
+                        datosTabla.setAll(PasajeroControladorListar.obtenerPasajeros());
+                        miTabla.refresh();
+
+                        Mensaje.mostrar(Alert.AlertType.INFORMATION,
+                                miEscenario, "Éxito", "El pasajero ha sido eliminado correctamente.");
+                    } else {
+                        Mensaje.mostrar(Alert.AlertType.ERROR,
+                                miEscenario, "Error", "No se pudo eliminar el pasajero.");
+                    }
+                } else {
+                    miTabla.getSelectionModel().clearSelection();
+                }
+            }
+        });
+
         HBox cajaBotones = new HBox(20);
         cajaBotones.setAlignment(Pos.CENTER);
         cajaBotones.getChildren().addAll(btnActualizar, btnEliminar, btnCancelar);

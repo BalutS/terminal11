@@ -8,6 +8,15 @@ public class Conductor {
     private Boolean generoConductor;
     private String nombreImagenPublicoConductor;
     private String nombreImagenPrivadoConductor;
+    private int cantidadViajeConductor;
+
+    public int getCantidadViajeConductor() {
+        return cantidadViajeConductor;
+    }
+
+    public void setCantidadViajeConductor(int cantidadViajeConductor) {
+        this.cantidadViajeConductor = cantidadViajeConductor;
+    }
 
     /**
      * @return the idConductor
@@ -93,13 +102,14 @@ public class Conductor {
         this.nombreImagenPrivadoConductor = nombreImagenPrivadoConductor;
     }
 
-    public Conductor(int cedulaConductor, String nombreConductor, Short edadConductor, Boolean generoConductor, String nombreImagenPublicoConductor, String nombreImagenPrivadoConductor) {
+    public Conductor(int cedulaConductor, String nombreConductor, Short edadConductor, Boolean generoConductor, String nombreImagenPublicoConductor, String nombreImagenPrivadoConductor, int cantidadViajeConductor) {
         this.idConductor = cedulaConductor;
         this.nombreConductor = nombreConductor;
         this.edadConductor = edadConductor;
         this.generoConductor = generoConductor;
         this.nombreImagenPublicoConductor = nombreImagenPublicoConductor;
         this.nombreImagenPrivadoConductor = nombreImagenPrivadoConductor;
+        this.cantidadViajeConductor = cantidadViajeConductor;
     }
 
     public Conductor() {

@@ -11,6 +11,15 @@ public class Viaje {
     private Boolean estadoViaje;
     private String nombreImagenPublicoViaje;
     private String nombreImagenPrivadoViaje;
+    private int cantidadTiqueteViaje;
+
+    public int getCantidadTiqueteViaje() {
+        return cantidadTiqueteViaje;
+    }
+
+    public void setCantidadTiqueteViaje(int cantidadTiqueteViaje) {
+        this.cantidadTiqueteViaje = cantidadTiqueteViaje;
+    }
 
     /**
      * @return the idViaje
@@ -132,7 +141,7 @@ public class Viaje {
         this.nombreImagenPrivadoViaje = nombreImagenPrivadoViaje;
     }
 
-    public Viaje(int idViaje, Ruta rutaViaje, Conductor conductorViaje, Bus busViaje, String fechaViaje, int horaViaje, Boolean estadoViaje, String nombreImagenPublicoViaje, String nombreImagenPrivadoViaje) {
+    public Viaje(int idViaje, Ruta rutaViaje, Conductor conductorViaje, Bus busViaje, String fechaViaje, int horaViaje, Boolean estadoViaje, String nombreImagenPublicoViaje, String nombreImagenPrivadoViaje, int cantidadTiqueteViaje) {
         this.idViaje = idViaje;
         this.rutaViaje = rutaViaje;
         this.conductorViaje = conductorViaje;
@@ -142,6 +151,7 @@ public class Viaje {
         this.estadoViaje = estadoViaje;
         this.nombreImagenPublicoViaje = nombreImagenPublicoViaje;
         this.nombreImagenPrivadoViaje = nombreImagenPrivadoViaje;
+        this.cantidadTiqueteViaje = cantidadTiqueteViaje;
     }
 
     public Viaje() {

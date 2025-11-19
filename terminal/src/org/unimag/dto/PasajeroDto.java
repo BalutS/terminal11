@@ -8,6 +8,24 @@ public class PasajeroDto {
     private Boolean generoPasajero;
     private String nombreImagenPublicoPasajero;
     private String nombreImagenPrivadoPasajero;
+    private int cantidadEquipajePasajero;
+    private int cantidadTiquetePasajero;
+
+    public int getCantidadEquipajePasajero() {
+        return cantidadEquipajePasajero;
+    }
+
+    public void setCantidadEquipajePasajero(int cantidadEquipajePasajero) {
+        this.cantidadEquipajePasajero = cantidadEquipajePasajero;
+    }
+
+    public int getCantidadTiquetePasajero() {
+        return cantidadTiquetePasajero;
+    }
+
+    public void setCantidadTiquetePasajero(int cantidadTiquetePasajero) {
+        this.cantidadTiquetePasajero = cantidadTiquetePasajero;
+    }
 
     public void setIdPasajero(int idPasajero) {
         this.idPasajero = idPasajero;
@@ -60,13 +78,15 @@ public class PasajeroDto {
     public PasajeroDto() {
     }
 
-    public PasajeroDto(int cedulaPasajero, String nombrePasajero, Short edadPasajero, Boolean generoPasajero, String nombreImagenPublicoPasajero, String nombreImagenPrivadoPasajero) {
+    public PasajeroDto(int cedulaPasajero, String nombrePasajero, Short edadPasajero, Boolean generoPasajero, String nombreImagenPublicoPasajero, String nombreImagenPrivadoPasajero, int cantidadEquipajePasajero, int cantidadTiquetePasajero) {
         this.idPasajero = cedulaPasajero;
         this.nombrePasajero = nombrePasajero;
         this.edadPasajero = edadPasajero;
         this.generoPasajero = generoPasajero;
         this.nombreImagenPublicoPasajero = nombreImagenPublicoPasajero;
         this.nombreImagenPrivadoPasajero = nombreImagenPrivadoPasajero;
+        this.cantidadEquipajePasajero = cantidadEquipajePasajero;
+        this.cantidadTiquetePasajero = cantidadTiquetePasajero;
     }
 
     @Override 

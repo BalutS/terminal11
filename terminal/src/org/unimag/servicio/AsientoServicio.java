@@ -16,6 +16,7 @@ import org.unimag.modelo.Asiento;
 import org.unimag.modelo.Bus;
 import org.unimag.recurso.constante.Persistencia;
 import org.unimag.recurso.utilidad.GestorImagen;
+import org.unimag.servicio.TiqueteServicio;
 
 public class AsientoServicio implements ApiOperacionBD<AsientoDto, Integer> {
 
@@ -44,7 +45,7 @@ public class AsientoServicio implements ApiOperacionBD<AsientoDto, Integer> {
 
     @Override
     public AsientoDto inserInto(AsientoDto dto, String ruta) {
-    Bus objBus = new Bus(dto.getBusAsiento().getIdBus(), "", null, "", "");
+    Bus objBus = new Bus(dto.getBusAsiento().getIdBus(), "", null, "", "", 0);
 
     Asiento objAsiento = new Asiento();
     objAsiento.setIdAsiento(getSerial());
@@ -80,42 +81,46 @@ public class AsientoServicio implements ApiOperacionBD<AsientoDto, Integer> {
 
     @Override
     public List<AsientoDto> selectFrom() {
-    BusServicio busServicio = new BusServicio();
-    List<BusDto> arrBuses = busServicio.selectFrom();
+        BusServicio busServicio = new BusServicio();
+        List<BusDto> arrBuses = busServicio.selectFrom();
 
-    // Crear MAP para acceso rápido
+        TiqueteServicio tiqueteServicio = new TiqueteServicio();
+        Map<Integer, Integer> arrCantidades = tiqueteServicio.tiquetesActivosPorAsiento();
+
+        // Crear MAP para acceso rápido
         Map<Integer, BusDto> mapBuses = new HashMap<>();
-    for (BusDto bus : arrBuses) {
-        mapBuses.put(bus.getIdBus(), bus);
-    }
-
-    List<AsientoDto> arregloAsientoDtos = new ArrayList<>();
-    List<String> arregloDatos = miArchivo.obtenerDatos();
-
-    for (String cadena : arregloDatos) {
-        try {
-            cadena = cadena.replace("@", "");
-            String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
-
-            AsientoDto objAsientoDto = new AsientoDto();
-            objAsientoDto.setIdAsiento(Integer.parseInt(columnas[0].trim()));
-
-            int idBus = Integer.parseInt(columnas[1].trim());
-            objAsientoDto.setBusAsiento(mapBuses.getOrDefault(idBus, null));
-
-            objAsientoDto.setEstadoAsiento(Boolean.parseBoolean(columnas[2].trim()));
-            objAsientoDto.setNombreImagenPublicoAsiento(columnas[3].trim());
-            objAsientoDto.setNombreImagenPrivadoAsiento(columnas[4].trim());
-
-            arregloAsientoDtos.add(objAsientoDto);
-
-        } catch (NumberFormatException error) {
-            Logger.getLogger(AsientoServicio.class.getName()).log(Level.SEVERE, null, error);
+        for (BusDto bus : arrBuses) {
+            mapBuses.put(bus.getIdBus(), bus);
         }
-    }
 
-    return arregloAsientoDtos;
-}
+        List<AsientoDto> arregloAsientoDtos = new ArrayList<>();
+        List<String> arregloDatos = miArchivo.obtenerDatos();
+
+        for (String cadena : arregloDatos) {
+            try {
+                cadena = cadena.replace("@", "");
+                String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
+
+                AsientoDto objAsientoDto = new AsientoDto();
+                objAsientoDto.setIdAsiento(Integer.parseInt(columnas[0].trim()));
+
+                int idBus = Integer.parseInt(columnas[1].trim());
+                objAsientoDto.setBusAsiento(mapBuses.getOrDefault(idBus, null));
+
+                objAsientoDto.setEstadoAsiento(Boolean.parseBoolean(columnas[2].trim()));
+                objAsientoDto.setNombreImagenPublicoAsiento(columnas[3].trim());
+                objAsientoDto.setNombreImagenPrivadoAsiento(columnas[4].trim());
+                objAsientoDto.setCantidadTiqueteAsiento(arrCantidades.getOrDefault(objAsientoDto.getIdAsiento(), 0));
+
+                arregloAsientoDtos.add(objAsientoDto);
+
+            } catch (NumberFormatException error) {
+                Logger.getLogger(AsientoServicio.class.getName()).log(Level.SEVERE, null, error);
+            }
+        }
+
+        return arregloAsientoDtos;
+    }
     
     public List<AsientoDto> selectFromWhereDesocupados() {
     List<AsientoDto> arreglo = new ArrayList<>();
@@ -139,14 +144,15 @@ public class AsientoServicio implements ApiOperacionBD<AsientoDto, Integer> {
             if (arrCantTiquetesActivos.getOrDefault(idAsiento, 0) == 0) {
 
                 // Aquí se usa DTO para devolver a la vista
-                BusDto busDto = new BusDto(idBus, "", null, "", "");
+                BusDto busDto = new BusDto(idBus, "", null, "", "", 0);
 
                 arreglo.add(new AsientoDto(
                         idAsiento,
                         busDto,
                         estadoAsiento,
                         imagenPublica,
-                        imagenPrivada
+                        imagenPrivada,
+                        0
                 ));
             }
 

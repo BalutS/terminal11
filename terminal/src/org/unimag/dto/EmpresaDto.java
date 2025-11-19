@@ -6,6 +6,15 @@ public class EmpresaDto {
     private String nombreEmpresa;
     private String nombreImagenPublicoEmpresa;
     private String nombreImagenPrivadoEmpresa;
+    private int cantidadBusEmpresa;
+
+    public int getCantidadBusEmpresa() {
+        return cantidadBusEmpresa;
+    }
+
+    public void setCantidadBusEmpresa(int cantidadBusEmpresa) {
+        this.cantidadBusEmpresa = cantidadBusEmpresa;
+    }
 
     public int getIdEmpresa() {
         return idEmpresa;
@@ -42,11 +51,12 @@ public class EmpresaDto {
     public EmpresaDto() {
     }
 
-    public EmpresaDto(int idEmpresa, String nombreEmpresa, String nombreImagenPublicoEmpresa, String nombreImagenPrivadoEmpresa) {
+    public EmpresaDto(int idEmpresa, String nombreEmpresa, String nombreImagenPublicoEmpresa, String nombreImagenPrivadoEmpresa, int cantidadBusEmpresa) {
         this.idEmpresa = idEmpresa;
         this.nombreEmpresa = nombreEmpresa;
         this.nombreImagenPublicoEmpresa = nombreImagenPublicoEmpresa;
         this.nombreImagenPrivadoEmpresa = nombreImagenPrivadoEmpresa;
+        this.cantidadBusEmpresa = cantidadBusEmpresa;
     }
     
 

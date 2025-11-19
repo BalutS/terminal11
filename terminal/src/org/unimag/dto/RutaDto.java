@@ -8,6 +8,15 @@ public class RutaDto {
     private Double tarifaRuta;
     private String nombreImagenPublicoRuta;
     private String nombreImagenPrivadoRuta;
+    private int cantidadViajeRuta;
+
+    public int getCantidadViajeRuta() {
+        return cantidadViajeRuta;
+    }
+
+    public void setCantidadViajeRuta(int cantidadViajeRuta) {
+        this.cantidadViajeRuta = cantidadViajeRuta;
+    }
 
     public void setIdRuta(int idRuta) {
         this.idRuta = idRuta;
@@ -60,13 +69,14 @@ public class RutaDto {
     public RutaDto() {
     }
 
-    public RutaDto(int idRuta, String ciudadOrigenRuta, String ciudadDestinoRuta, Double tarifaRuta, String nombreImagenPublicoRuta, String nombreImagenPrivadoRuta) {
+    public RutaDto(int idRuta, String ciudadOrigenRuta, String ciudadDestinoRuta, Double tarifaRuta, String nombreImagenPublicoRuta, String nombreImagenPrivadoRuta, int cantidadViajeRuta) {
         this.idRuta = idRuta;
         this.ciudadOrigenRuta = ciudadOrigenRuta;
         this.ciudadDestinoRuta = ciudadDestinoRuta;
         this.tarifaRuta = tarifaRuta;
         this.nombreImagenPublicoRuta = nombreImagenPublicoRuta;
         this.nombreImagenPrivadoRuta = nombreImagenPrivadoRuta;
+        this.cantidadViajeRuta = cantidadViajeRuta;
     }
 
     @Override

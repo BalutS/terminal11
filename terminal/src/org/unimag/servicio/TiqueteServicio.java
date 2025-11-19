@@ -9,12 +9,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.unimag.api.ApiOperacionBD;
-import org.unimag.dto.AsientoDto;
-import org.unimag.dto.PasajeroDto;
+import org.unimag.dto.BusDto;
+import org.unimag.dto.ConductorDto;
+import org.unimag.dto.RutaDto;
 import org.unimag.dto.TiqueteDto;
 import org.unimag.dto.ViajeDto;
-import org.unimag.modelo.Asiento;
-import org.unimag.modelo.Pasajero;
+import org.unimag.modelo.Bus;
+import org.unimag.modelo.Conductor;
+import org.unimag.modelo.Ruta;
 import org.unimag.modelo.Tiquete;
 import org.unimag.modelo.Viaje;
 import org.unimag.recurso.constante.Persistencia;
@@ -38,6 +40,7 @@ public class TiqueteServicio implements ApiOperacionBD<TiqueteDto, Integer> {
 
     public TiqueteServicio() {
         nombrePersistencia = Persistencia.NOMBRE_TIQUETE;
+        asientoServicio = new AsientoServicio();
         try {
             miArchivo = new NioFile(nombrePersistencia);
         } catch (IOException ex) {
@@ -58,9 +61,9 @@ public class TiqueteServicio implements ApiOperacionBD<TiqueteDto, Integer> {
 
     @Override
     public TiqueteDto inserInto(TiqueteDto dto, String ruta) {
-        Pasajero objPasajero = new Pasajero(dto.getPasajeroTiquete().getIdPasajero(), "", (short) 0, false, "", "");
-        Viaje objViaje = new Viaje(dto.getViajeTiquete().getIdViaje(), null, null, null, "", 0, false, "", "");
-        Asiento objAsiento = new Asiento(dto.getAsientoTiquete().getIdAsiento(), null, false, "", "");
+        Pasajero objPasajero = new Pasajero(dto.getPasajeroTiquete().getIdPasajero(), "", (short) 0, false, "", "", 0, 0);
+        Viaje objViaje = new Viaje(dto.getViajeTiquete().getIdViaje(), null, null, null, "", 0, false, "", "", 0);
+        Asiento objAsiento = new Asiento(dto.getAsientoTiquete().getIdAsiento(), null, false, "", "", 0);
 
         Tiquete objTiquete = new Tiquete();
         objTiquete.setIdTiquete(getSerial());
@@ -166,18 +169,22 @@ public class TiqueteServicio implements ApiOperacionBD<TiqueteDto, Integer> {
 
     @Override
     public Boolean deleteFrom(Integer codigo) {
-        Boolean correcto = false;
         try {
-            List<String> arreglo;
+            String[] tiqueteInfo = miArchivo.obtenerDatos().get(codigo).split(Persistencia.SEPARADOR_COLUMNAS);
+            int idAsiento = Integer.parseInt(tiqueteInfo[3].trim());
 
-            arreglo = miArchivo.borrarFilaPosicion(codigo);
-            if (!arreglo.isEmpty()) {
-                correcto = true;
+            if (!miArchivo.borrarFilaPosicion(codigo).isEmpty()) {
+                AsientoDto asientoDto = asientoServicio.getOne(idAsiento);
+                if (asientoDto != null) {
+                    asientoDto.setEstadoAsiento(false);
+                    asientoServicio.updateSet(idAsiento, asientoDto, "");
+                }
+                return true;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(BusServicio.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException | NumberFormatException | IndexOutOfBoundsException ex) {
+            Logger.getLogger(TiqueteServicio.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return correcto;
+        return false;
     }
     
     public Map<Integer, Integer> tiquetesActivosPorAsiento() {
@@ -189,7 +196,6 @@ public class TiqueteServicio implements ApiOperacionBD<TiqueteDto, Integer> {
                 cadena = cadena.replace("@", "");
                 String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
                 
-                // Validar que la fila tenga suficientes columnas
                 if (columnas.length < 5) {
                     continue;
                 }
@@ -197,10 +203,55 @@ public class TiqueteServicio implements ApiOperacionBD<TiqueteDto, Integer> {
                 int idAsiento = Integer.parseInt(columnas[3].trim());
                 boolean estadoTiquete = Boolean.valueOf(columnas[4].trim());
 
-                // Solo cuenta tiquetes ACTIVOS
                 if (estadoTiquete) {
                     arrCantidades.put(idAsiento, arrCantidades.getOrDefault(idAsiento, 0) + 1);
                 }
+
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException error) {
+                Logger.getLogger(TiqueteServicio.class.getName()).log(Level.SEVERE, null, error);
+            }
+        }
+        return arrCantidades;
+    }
+
+    public Map<Integer, Integer> tiquetesPorPasajero() {
+        Map<Integer, Integer> arrCantidades = new HashMap<>();
+        List<String> arregloDatos = miArchivo.obtenerDatos();
+
+        for (String cadena : arregloDatos) {
+            try {
+                cadena = cadena.replace("@", "");
+                String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
+
+                if (columnas.length < 2) {
+                    continue;
+                }
+
+                int idPasajero = Integer.parseInt(columnas[1].trim());
+                arrCantidades.put(idPasajero, arrCantidades.getOrDefault(idPasajero, 0) + 1);
+
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException error) {
+                Logger.getLogger(TiqueteServicio.class.getName()).log(Level.SEVERE, null, error);
+            }
+        }
+        return arrCantidades;
+    }
+
+    public Map<Integer, Integer> tiquetesPorViaje() {
+        Map<Integer, Integer> arrCantidades = new HashMap<>();
+        List<String> arregloDatos = miArchivo.obtenerDatos();
+
+        for (String cadena : arregloDatos) {
+            try {
+                cadena = cadena.replace("@", "");
+                String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
+
+                if (columnas.length < 3) {
+                    continue;
+                }
+
+                int idViaje = Integer.parseInt(columnas[2].trim());
+                arrCantidades.put(idViaje, arrCantidades.getOrDefault(idViaje, 0) + 1);
 
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException error) {
                 Logger.getLogger(TiqueteServicio.class.getName()).log(Level.SEVERE, null, error);

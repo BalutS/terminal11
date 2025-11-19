@@ -4,6 +4,7 @@ import com.poo.persistence.NioFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.unimag.api.ApiOperacionBD;
@@ -76,6 +77,9 @@ public class ConductorServicio implements ApiOperacionBD<ConductorDto, Integer> 
 
     @Override
     public List<ConductorDto> selectFrom() {
+        ViajeServicio viajeServicio = new ViajeServicio();
+        Map<Integer, Integer> arrCantidades = viajeServicio.viajesPorConductor();
+
         List<ConductorDto> arregloConductorDtos = new ArrayList<>();
         List<String> arregloDatos = miArchivo.obtenerDatos();
 
@@ -96,6 +100,7 @@ public class ConductorServicio implements ApiOperacionBD<ConductorDto, Integer> 
                 objConductorDto.setGeneroConductor(Boolean.parseBoolean(columnas[3].trim()));
                 objConductorDto.setNombreImagenPublicoConductor(columnas[4].trim());
                 objConductorDto.setNombreImagenPrivadoConductor(columnas[5].trim());
+                objConductorDto.setCantidadViajeConductor(arrCantidades.getOrDefault(objConductorDto.getIdConductor(), 0));
 
                 arregloConductorDtos.add(objConductorDto);
 
