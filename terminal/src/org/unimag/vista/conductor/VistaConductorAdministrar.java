@@ -4,7 +4,9 @@ import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -22,11 +24,13 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.unimag.controlador.conductor.ConductorControladorEliminar;
 import org.unimag.controlador.conductor.ConductorControladorListar;
 import org.unimag.dto.ConductorDto;
 import org.unimag.recurso.constante.Configuracion;
 import org.unimag.recurso.utilidad.Icono;
 import org.unimag.recurso.utilidad.Marco;
+import org.unimag.recurso.utilidad.Mensaje;
 
 public class VistaConductorAdministrar extends StackPane {
 
@@ -37,6 +41,8 @@ public class VistaConductorAdministrar extends StackPane {
     private final Button btnEliminar;
     private final Button btnActualizar;
     private final Button btnCancelar;
+    private Text titulo;
+    private final ObservableList<ConductorDto> datosTabla = FXCollections.observableArrayList();
 
     private static final String ESTILO_CENTRAR = "-fx-alignment: CENTER;";
     private static final String ESTILO_IZQUIERDA = "-fx-alignment: CENTER-LEFT;";
@@ -83,7 +89,7 @@ public class VistaConductorAdministrar extends StackPane {
                 miEscenario.heightProperty().multiply(0.05));
 
         int cant = ConductorControladorListar.obtenerCantidadConductor();
-        Text titulo = new Text("ADMINISTRAR CONDUCTORES (" + cant + ")");
+        titulo = new Text("ADMINISTRAR CONDUCTORES (" + cant + ")");
         titulo.setFill(Color.web(Configuracion.MORADO_OSCURO));
         titulo.setFont(Font.font("Rockwell", FontWeight.BOLD, 28));
 
@@ -179,7 +185,7 @@ public class VistaConductorAdministrar extends StackPane {
         configurarColumnas();
 
         List<ConductorDto> arrConductor = ConductorControladorListar.obtenerConductores();
-        ObservableList<ConductorDto> datosTabla = FXCollections.observableArrayList(arrConductor);
+        datosTabla.setAll(arrConductor);
 
         miTabla.setItems(datosTabla);
         miTabla.setPlaceholder(new Text("No hay conductores registrados"));
@@ -199,6 +205,53 @@ public class VistaConductorAdministrar extends StackPane {
     }
     
     private void crearBotones() {
+        btnCancelar.setOnAction(e -> {
+            miTabla.getSelectionModel().clearSelection();
+        });
+
+        btnEliminar.setOnAction(e -> {
+            if (miTabla.getSelectionModel().getSelectedItem() == null) {
+                Mensaje.mostrar(Alert.AlertType.WARNING,
+                        miEscenario, "Atención", "Debe seleccionar un conductor.");
+            } else {
+                ConductorDto conductorSeleccionado = miTabla.getSelectionModel().getSelectedItem();
+
+                if (conductorSeleccionado.getCantidadViajeConductor()> 0) {
+                    Mensaje.mostrar(Alert.AlertType.WARNING,
+                            miEscenario, "Advertencia", "No se puede eliminar el conductor porque tiene viajes asociados.");
+                    return;
+                }
+
+                String mensaje = "¿Está seguro de que desea eliminar el conductor con ID: "
+                        + conductorSeleccionado.getIdConductor() + "?";
+
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Confirmar Eliminación");
+                alert.setHeaderText(null);
+                alert.setContentText(mensaje);
+                alert.initOwner(miEscenario);
+
+                if (alert.showAndWait().get() == ButtonType.OK) {
+                    int posi = miTabla.getSelectionModel().getSelectedIndex();
+                    if (ConductorControladorEliminar.borrar(posi)) {
+                        int cant = ConductorControladorListar.obtenerCantidadConductor();
+                        titulo.setText("ADMINISTRAR CONDUCTORES (" + cant + ")");
+
+                        datosTabla.setAll(ConductorControladorListar.obtenerConductores());
+                        miTabla.refresh();
+
+                        Mensaje.mostrar(Alert.AlertType.INFORMATION,
+                                miEscenario, "Éxito", "El conductor ha sido eliminado correctamente.");
+                    } else {
+                        Mensaje.mostrar(Alert.AlertType.ERROR,
+                                miEscenario, "Error", "No se pudo eliminar el conductor.");
+                    }
+                } else {
+                    miTabla.getSelectionModel().clearSelection();
+                }
+            }
+        });
+
         HBox cajaBotones = new HBox(20);
         cajaBotones.setAlignment(Pos.CENTER);
         cajaBotones.getChildren().addAll(btnActualizar, btnEliminar, btnCancelar);
