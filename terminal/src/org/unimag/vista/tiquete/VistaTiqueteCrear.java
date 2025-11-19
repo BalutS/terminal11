@@ -132,7 +132,7 @@ public class VistaTiqueteCrear extends StackPane {
 
         List<PasajeroDto> arrPasajeros = PasajeroControladorListar.obtenerPasajeros();
         //que el código inicie en 0
-        PasajeroDto opcionInicial1 = new PasajeroDto(0, "Seleccione el Pasajero", (short) 0, false, "", "");
+        PasajeroDto opcionInicial1 = new PasajeroDto(0, "Seleccione el Pasajero", (short) 0, false, "", "", 0, 0);
         arrPasajeros.add(0, opcionInicial1);
 
         cbmPasajeros = new ComboBox<>();
@@ -153,7 +153,7 @@ public class VistaTiqueteCrear extends StackPane {
 
         List<ViajeDto> arrBuses = ViajeControladorListar.obtenerViajes();
         //que el código inicie en 0
-        ViajeDto opcionInicial2 = new ViajeDto(0, null, null, null, "", 0, true, "", "");
+        ViajeDto opcionInicial2 = new ViajeDto(0, null, null, null, "", 0, true, "", "", 0);
         arrBuses.add(0, opcionInicial2);
 
         cbmViajes = new ComboBox<>();
@@ -174,7 +174,7 @@ public class VistaTiqueteCrear extends StackPane {
 
         List<AsientoDto> arrAsientos = AsientoControladorListar.obtenerAsientosDesocupados();
         //que el código inicie en 0
-        AsientoDto opcionInicial3 = new AsientoDto(0, null, false, "", "");
+        AsientoDto opcionInicial3 = new AsientoDto(0, null, false, "", "", 0);
         arrAsientos.add(0, opcionInicial3);
 
         cbmAsientos = new ComboBox<>();

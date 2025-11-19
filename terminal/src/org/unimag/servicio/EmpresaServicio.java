@@ -4,6 +4,7 @@ import com.poo.persistence.NioFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.unimag.api.ApiOperacionBD;
@@ -71,6 +72,9 @@ public class EmpresaServicio implements ApiOperacionBD<EmpresaDto, Integer> {
 
     @Override
     public List<EmpresaDto> selectFrom() {
+        BusServicio busServicio = new BusServicio();
+        Map<Integer, Integer> arrCantidades = busServicio.busesPorEmpresa();
+
         List<EmpresaDto> arregloEmpresaDtos = new ArrayList<>();
         List<String> arregloDatos = miArchivo.obtenerDatos();
 
@@ -88,6 +92,7 @@ public class EmpresaServicio implements ApiOperacionBD<EmpresaDto, Integer> {
                 objEmpresaDto.setNombreEmpresa(columnas[1].trim());
                 objEmpresaDto.setNombreImagenPublicoEmpresa(columnas[2].trim());
                 objEmpresaDto.setNombreImagenPrivadoEmpresa(columnas[3].trim());
+                objEmpresaDto.setCantidadBusEmpresa(arrCantidades.getOrDefault(objEmpresaDto.getIdEmpresa(), 0));
 
                 arregloEmpresaDtos.add(objEmpresaDto);
 

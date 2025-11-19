@@ -126,7 +126,7 @@ public class VistaAsientoCrear extends StackPane {
 
         List<BusDto> arrBuses = BusControladorListar.obtenerBuses();
         //que el código inicie en 0
-        BusDto opcionInicial = new BusDto(0, "", null, "", "");
+        BusDto opcionInicial = new BusDto(0, "", null, "", "", 0);
         arrBuses.add(0, opcionInicial);
 
         cbmBuses = new ComboBox<>();

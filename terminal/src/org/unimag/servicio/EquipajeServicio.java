@@ -44,7 +44,7 @@ public class EquipajeServicio implements ApiOperacionBD<EquipajeDto, Integer> {
 
     @Override
     public EquipajeDto inserInto(EquipajeDto dto, String ruta) {
-        Pasajero objPasajero = new Pasajero(dto.getDuenioEquipaje().getIdPasajero(), "", (short) 0, false, "", "");
+        Pasajero objPasajero = new Pasajero(dto.getDuenioEquipaje().getIdPasajero(), "", (short) 0, false, "", "", 0, 0);
 
         Equipaje objEquipaje = new Equipaje();
         objEquipaje.setIdEquipaje(getSerial());
@@ -144,6 +144,29 @@ public class EquipajeServicio implements ApiOperacionBD<EquipajeDto, Integer> {
             Logger.getLogger(BusServicio.class.getName()).log(Level.SEVERE, null, ex);
         }
         return correcto;
+    }
+
+    public Map<Integer, Integer> equipajePorPasajero() {
+        Map<Integer, Integer> arrCantidades = new HashMap<>();
+        List<String> arregloDatos = miArchivo.obtenerDatos();
+
+        for (String cadena : arregloDatos) {
+            try {
+                cadena = cadena.replace("@", "");
+                String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
+
+                if (columnas.length < 3) {
+                    continue;
+                }
+
+                int idPasajero = Integer.parseInt(columnas[2].trim());
+                arrCantidades.put(idPasajero, arrCantidades.getOrDefault(idPasajero, 0) + 1);
+
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException error) {
+                Logger.getLogger(EquipajeServicio.class.getName()).log(Level.SEVERE, null, error);
+            }
+        }
+        return arrCantidades;
     }
 
     @Override

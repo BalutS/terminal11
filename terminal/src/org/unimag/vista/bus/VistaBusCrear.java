@@ -136,7 +136,7 @@ public class VistaBusCrear extends StackPane {
 
         List<EmpresaDto> arrEmpresas = EmpresaControladorListar.obtenerEmpresas();
         //que el código inicie en 0
-        EmpresaDto opcionInicial = new EmpresaDto(0, "Seleccione Empresa del Bus", "", "");
+        EmpresaDto opcionInicial = new EmpresaDto(0, "Seleccione Empresa del Bus", "", "", 0);
         arrEmpresas.add(0, opcionInicial);
 
         cbmEmpresas = new ComboBox<>();

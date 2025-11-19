@@ -153,7 +153,7 @@ public class VistaViajeCrear extends StackPane {
 
         List<RutaDto> arrRutas = RutaControladorListar.obtenerRutas();
         //que el código inicie en 0
-        RutaDto opcionInicial1 = new RutaDto(0, "Seleccione Ruta", "",0.0, "", "");
+        RutaDto opcionInicial1 = new RutaDto(0, "Seleccione Ruta", "",0.0, "", "", 0);
         arrRutas.add(0, opcionInicial1);
 
         cbmRutas = new ComboBox<>();
@@ -174,7 +174,7 @@ public class VistaViajeCrear extends StackPane {
 
         List<BusDto> arrBuses = BusControladorListar.obtenerBuses();
         //que el código inicie en 0
-        BusDto opcionInicial2 = new BusDto(0, "", null,"", "");
+        BusDto opcionInicial2 = new BusDto(0, "", null,"", "", 0);
         arrBuses.add(0, opcionInicial2);
 
         cbmBuses = new ComboBox<>();
@@ -195,7 +195,7 @@ public class VistaViajeCrear extends StackPane {
 
         List<ConductorDto> arrConductor = ConductorControladorListar.obtenerConductores();
         //que el código inicie en 0
-        ConductorDto opcionInicial3 = new ConductorDto(0, "Seleccione Empresa del Bus", (short) 0, false, "", "");
+        ConductorDto opcionInicial3 = new ConductorDto(0, "Seleccione Empresa del Bus", (short) 0, false, "", "", 0);
         arrConductor.add(0, opcionInicial3);
 
         cbmConductores = new ComboBox<>();

@@ -4,6 +4,7 @@ import com.poo.persistence.NioFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.unimag.api.ApiOperacionBD;
@@ -75,6 +76,12 @@ public class PasajeroServicio implements ApiOperacionBD<PasajeroDto, Integer> {
 
     @Override
     public List<PasajeroDto> selectFrom() {
+        EquipajeServicio equipajeServicio = new EquipajeServicio();
+        Map<Integer, Integer> arrCantEquipaje = equipajeServicio.equipajePorPasajero();
+
+        TiqueteServicio tiqueteServicio = new TiqueteServicio();
+        Map<Integer, Integer> arrCantTiquetes = tiqueteServicio.tiquetesPorPasajero();
+
         List<PasajeroDto> arregloPasajeroDtos = new ArrayList<>();
         List<String> arregloDatos = miArchivo.obtenerDatos();
 
@@ -94,6 +101,8 @@ public class PasajeroServicio implements ApiOperacionBD<PasajeroDto, Integer> {
                 objPasajeroDto.setGeneroPasajero(Boolean.parseBoolean(columnas[3].trim()));
                 objPasajeroDto.setNombreImagenPublicoPasajero(columnas[4].trim());
                 objPasajeroDto.setNombreImagenPrivadoPasajero(columnas[5].trim());
+                objPasajeroDto.setCantidadEquipajePasajero(arrCantEquipaje.getOrDefault(objPasajeroDto.getIdPasajero(), 0));
+                objPasajeroDto.setCantidadTiquetePasajero(arrCantTiquetes.getOrDefault(objPasajeroDto.getIdPasajero(), 0));
 
                 arregloPasajeroDtos.add(objPasajeroDto);
                 

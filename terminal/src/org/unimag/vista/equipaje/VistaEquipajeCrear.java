@@ -136,7 +136,7 @@ public class VistaEquipajeCrear extends StackPane {
 
         List<PasajeroDto> arrPasajeros = PasajeroControladorListar.obtenerPasajeros();
         //que el código inicie en 0
-        PasajeroDto opcionInicial = new PasajeroDto(0, "", null, false,"", "");
+        PasajeroDto opcionInicial = new PasajeroDto(0, "", null, false,"", "", 0, 0);
         arrPasajeros.add(0, opcionInicial);
 
         cbmPasajero = new ComboBox<>();
