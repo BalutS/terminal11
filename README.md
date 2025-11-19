@@ -30,5 +30,6 @@ no se permite borrar si existe algun bus que tenga la empresa seleccionada. Most
 Viaje:
 no se permite borrar si existe algun tiquete que tenga el viaje seleccionado. Mostrar un menaje de advertencia en ese caso
 
-Para poder hacer las implementaciones de borrar y cancelar, sigue como guia al proyecto "guia" siguiendo la sintaxis, organizamiento de metodos y clases
+Para poder hacer las implementaciones de borrar y cancelar, sigue como guia al proyecto "guia" siguiendo la sintaxis, organizamiento de metodos y clases.
+utiliza como base las clases que ya han sido creadas. No borres ni edites codigo a menos que sea estrictamente necesario para el correcto funcionamiento del programa
 
