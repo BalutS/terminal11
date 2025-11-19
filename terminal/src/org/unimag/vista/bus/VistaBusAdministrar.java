@@ -5,7 +5,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -23,12 +25,14 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.unimag.controlador.bus.BusControladorEliminar;
 import org.unimag.controlador.bus.BusControladorListar;
 import org.unimag.dto.BusDto;
 import org.unimag.dto.EmpresaDto;
 import org.unimag.recurso.constante.Configuracion;
 import org.unimag.recurso.utilidad.Icono;
 import org.unimag.recurso.utilidad.Marco;
+import org.unimag.recurso.utilidad.Mensaje;
 
 public class VistaBusAdministrar extends StackPane {
 
@@ -39,6 +43,8 @@ public class VistaBusAdministrar extends StackPane {
     private final Button btnEliminar;
     private final Button btnActualizar;
     private final Button btnCancelar;
+    private Text titulo;
+    private final ObservableList<BusDto> datosTabla = FXCollections.observableArrayList();
 
     private static final String ESTILO_CENTRAR = "-fx-alignment: CENTER;";
     private static final String ESTILO_IZQUIERDA = "-fx-alignment: CENTER-LEFT;";
@@ -83,7 +89,7 @@ public class VistaBusAdministrar extends StackPane {
                 miEscenario.heightProperty().multiply(0.05));
 
         int cant = BusControladorListar.obtenerCantidadBus();
-        Text titulo = new Text("ADMINISTRAR BUSES (" + cant + ")");
+        titulo = new Text("ADMINISTRAR BUSES (" + cant + ")");
         titulo.setFill(Color.web(Configuracion.MORADO_OSCURO));
         titulo.setFont(Font.font("Rockwell", FontWeight.BOLD, 28));
 
@@ -162,7 +168,7 @@ public class VistaBusAdministrar extends StackPane {
         configurarColumnas();
 
         List<BusDto> arrBus = BusControladorListar.obtenerBuses();
-        ObservableList<BusDto> datosTabla = FXCollections.observableArrayList(arrBus);
+        datosTabla.setAll(arrBus);
 
         miTabla.setItems(datosTabla);
         miTabla.setPlaceholder(new Text("No hay buses registrados"));
@@ -182,6 +188,53 @@ public class VistaBusAdministrar extends StackPane {
     }
     
     private void crearBotones() {
+        btnCancelar.setOnAction(e -> {
+            miTabla.getSelectionModel().clearSelection();
+        });
+
+        btnEliminar.setOnAction(e -> {
+            if (miTabla.getSelectionModel().getSelectedItem() == null) {
+                Mensaje.mostrar(Alert.AlertType.WARNING,
+                        miEscenario, "Atención", "Debe seleccionar un bus.");
+            } else {
+                BusDto busSeleccionado = miTabla.getSelectionModel().getSelectedItem();
+
+                if (busSeleccionado.getCantidadViajeBus()> 0) {
+                    Mensaje.mostrar(Alert.AlertType.WARNING,
+                            miEscenario, "Advertencia", "No se puede eliminar el bus porque tiene viajes asociados.");
+                    return;
+                }
+
+                String mensaje = "¿Está seguro de que desea eliminar el bus con ID: "
+                        + busSeleccionado.getIdBus() + "?";
+
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Confirmar Eliminación");
+                alert.setHeaderText(null);
+                alert.setContentText(mensaje);
+                alert.initOwner(miEscenario);
+
+                if (alert.showAndWait().get() == ButtonType.OK) {
+                    int posi = miTabla.getSelectionModel().getSelectedIndex();
+                    if (BusControladorEliminar.borrar(posi)) {
+                        int cant = BusControladorListar.obtenerCantidadBus();
+                        titulo.setText("ADMINISTRAR BUSES (" + cant + ")");
+
+                        datosTabla.setAll(BusControladorListar.obtenerBuses());
+                        miTabla.refresh();
+
+                        Mensaje.mostrar(Alert.AlertType.INFORMATION,
+                                miEscenario, "Éxito", "El bus ha sido eliminado correctamente.");
+                    } else {
+                        Mensaje.mostrar(Alert.AlertType.ERROR,
+                                miEscenario, "Error", "No se pudo eliminar el bus.");
+                    }
+                } else {
+                    miTabla.getSelectionModel().clearSelection();
+                }
+            }
+        });
+
         HBox cajaBotones = new HBox(20);
         cajaBotones.setAlignment(Pos.CENTER);
         cajaBotones.getChildren().addAll(btnActualizar, btnEliminar, btnCancelar);

@@ -4,7 +4,9 @@ import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -22,11 +24,13 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.unimag.controlador.empresa.EmpresaControladorEliminar;
 import org.unimag.controlador.empresa.EmpresaControladorListar;
 import org.unimag.dto.EmpresaDto;
 import org.unimag.recurso.constante.Configuracion;
 import org.unimag.recurso.utilidad.Icono;
 import org.unimag.recurso.utilidad.Marco;
+import org.unimag.recurso.utilidad.Mensaje;
 
 public class VistaEmpresaAdministrar extends StackPane {
 
@@ -37,6 +41,8 @@ public class VistaEmpresaAdministrar extends StackPane {
     private final Button btnEliminar;
     private final Button btnActualizar;
     private final Button btnCancelar;
+    private Text titulo;
+    private final ObservableList<EmpresaDto> datosTabla = FXCollections.observableArrayList();
 
     private static final String ESTILO_CENTRAR = "-fx-alignment: CENTER;";
     private static final String ESTILO_IZQUIERDA = "-fx-alignment: CENTER-LEFT;";
@@ -82,7 +88,7 @@ public class VistaEmpresaAdministrar extends StackPane {
                 miEscenario.heightProperty().multiply(0.05));
 
         int cant = EmpresaControladorListar.obtenerCantidadEmpresa();
-        Text titulo = new Text("ADMINISTRAR EMPRESAS (" + cant + ")");
+        titulo = new Text("ADMINISTRAR EMPRESAS (" + cant + ")");
         titulo.setFill(Color.web(Configuracion.MORADO_OSCURO));
         titulo.setFont(Font.font("Rockwell", FontWeight.BOLD, 28));
 
@@ -145,7 +151,7 @@ public class VistaEmpresaAdministrar extends StackPane {
         configurarColumnas();
 
         List<EmpresaDto> arrEmpresa = EmpresaControladorListar.obtenerEmpresas();
-        ObservableList<EmpresaDto> datosTabla = FXCollections.observableArrayList(arrEmpresa);
+        datosTabla.setAll(arrEmpresa);
 
         miTabla.setItems(datosTabla);
         miTabla.setPlaceholder(new Text("No hay empresas registradas"));
@@ -165,6 +171,53 @@ public class VistaEmpresaAdministrar extends StackPane {
     }
     
     private void crearBotones() {
+        btnCancelar.setOnAction(e -> {
+            miTabla.getSelectionModel().clearSelection();
+        });
+
+        btnEliminar.setOnAction(e -> {
+            if (miTabla.getSelectionModel().getSelectedItem() == null) {
+                Mensaje.mostrar(Alert.AlertType.WARNING,
+                        miEscenario, "Atención", "Debe seleccionar una empresa.");
+            } else {
+                EmpresaDto empresaSeleccionada = miTabla.getSelectionModel().getSelectedItem();
+
+                if (empresaSeleccionada.getCantidadBusEmpresa()> 0) {
+                    Mensaje.mostrar(Alert.AlertType.WARNING,
+                            miEscenario, "Advertencia", "No se puede eliminar la empresa porque tiene buses asociados.");
+                    return;
+                }
+
+                String mensaje = "¿Está seguro de que desea eliminar la empresa con ID: "
+                        + empresaSeleccionada.getIdEmpresa() + "?";
+
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Confirmar Eliminación");
+                alert.setHeaderText(null);
+                alert.setContentText(mensaje);
+                alert.initOwner(miEscenario);
+
+                if (alert.showAndWait().get() == ButtonType.OK) {
+                    int posi = miTabla.getSelectionModel().getSelectedIndex();
+                    if (EmpresaControladorEliminar.borrar(posi)) {
+                        int cant = EmpresaControladorListar.obtenerCantidadEmpresa();
+                        titulo.setText("ADMINISTRAR EMPRESAS (" + cant + ")");
+
+                        datosTabla.setAll(EmpresaControladorListar.obtenerEmpresas());
+                        miTabla.refresh();
+
+                        Mensaje.mostrar(Alert.AlertType.INFORMATION,
+                                miEscenario, "Éxito", "La empresa ha sido eliminada correctamente.");
+                    } else {
+                        Mensaje.mostrar(Alert.AlertType.ERROR,
+                                miEscenario, "Error", "No se pudo eliminar la empresa.");
+                    }
+                } else {
+                    miTabla.getSelectionModel().clearSelection();
+                }
+            }
+        });
+
         HBox cajaBotones = new HBox(20);
         cajaBotones.setAlignment(Pos.CENTER);
         cajaBotones.getChildren().addAll(btnActualizar, btnEliminar, btnCancelar);

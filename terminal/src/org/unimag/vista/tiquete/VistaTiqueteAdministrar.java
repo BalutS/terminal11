@@ -5,7 +5,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -23,6 +25,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.unimag.controlador.tiquete.TiqueteControladorEliminar;
 import org.unimag.controlador.tiquete.TiqueteControladorListar;
 import org.unimag.dto.AsientoDto;
 import org.unimag.dto.PasajeroDto;
@@ -32,6 +35,7 @@ import org.unimag.dto.ViajeDto;
 import org.unimag.recurso.constante.Configuracion;
 import org.unimag.recurso.utilidad.Icono;
 import org.unimag.recurso.utilidad.Marco;
+import org.unimag.recurso.utilidad.Mensaje;
 
 public class VistaTiqueteAdministrar extends StackPane {
 
@@ -42,6 +46,8 @@ public class VistaTiqueteAdministrar extends StackPane {
     private final Button btnEliminar;
     private final Button btnActualizar;
     private final Button btnCancelar;
+    private Text titulo;
+    private final ObservableList<TiqueteDto> datosTabla = FXCollections.observableArrayList();
 
     private static final String ESTILO_CENTRAR = "-fx-alignment: CENTER;";
     private static final String ESTILO_IZQUIERDA = "-fx-alignment: CENTER-LEFT;";
@@ -88,7 +94,7 @@ public class VistaTiqueteAdministrar extends StackPane {
                 miEscenario.heightProperty().multiply(0.05));
 
         int cant = TiqueteControladorListar.obtenerCantidadTiquete();
-        Text titulo = new Text("ADMINISTRAR TIQUETES (" + cant + ")");
+        titulo = new Text("ADMINISTRAR TIQUETES (" + cant + ")");
         titulo.setFill(Color.web(Configuracion.MORADO_OSCURO));
         titulo.setFont(Font.font("Rockwell", FontWeight.BOLD, 28));
 
@@ -216,7 +222,7 @@ public class VistaTiqueteAdministrar extends StackPane {
         configurarColumnas();
 
         List<TiqueteDto> arrTiquete = TiqueteControladorListar.obtenerTiquete();
-        ObservableList<TiqueteDto> datosTabla = FXCollections.observableArrayList(arrTiquete);
+        datosTabla.setAll(arrTiquete);
 
         miTabla.setItems(datosTabla);
         miTabla.setPlaceholder(new Text("No hay tiquetes registrados"));
@@ -236,6 +242,48 @@ public class VistaTiqueteAdministrar extends StackPane {
     }
     
     private void crearBotones() {
+
+        btnCancelar.setOnAction(e -> {
+            miTabla.getSelectionModel().clearSelection();
+        });
+
+        btnEliminar.setOnAction(e -> {
+            if (miTabla.getSelectionModel().getSelectedItem() == null) {
+                Mensaje.mostrar(Alert.AlertType.WARNING,
+                        miEscenario, "Atención", "Debe seleccionar un tiquete.");
+            } else {
+                TiqueteDto tiqueteSeleccionado = miTabla.getSelectionModel().getSelectedItem();
+
+                String mensaje = "¿Está seguro de que desea eliminar el tiquete con ID: "
+                        + tiqueteSeleccionado.getIdTiquete() + "?";
+
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Confirmar Eliminación");
+                alert.setHeaderText(null);
+                alert.setContentText(mensaje);
+                alert.initOwner(miEscenario);
+
+                if (alert.showAndWait().get() == ButtonType.OK) {
+                    int posi = miTabla.getSelectionModel().getSelectedIndex();
+                    if (TiqueteControladorEliminar.borrar(posi)) {
+                        int cant = TiqueteControladorListar.obtenerCantidadTiquete();
+                        titulo.setText("ADMINISTRAR TIQUETES (" + cant + ")");
+
+                        datosTabla.setAll(TiqueteControladorListar.obtenerTiquete());
+                        miTabla.refresh();
+
+                        Mensaje.mostrar(Alert.AlertType.INFORMATION,
+                                miEscenario, "Éxito", "El tiquete ha sido eliminado correctamente.");
+                    } else {
+                        Mensaje.mostrar(Alert.AlertType.ERROR,
+                                miEscenario, "Error", "No se pudo eliminar el tiquete.");
+                    }
+                } else {
+                    miTabla.getSelectionModel().clearSelection();
+                }
+            }
+        });
+
         HBox cajaBotones = new HBox(20);
         cajaBotones.setAlignment(Pos.CENTER);
         cajaBotones.getChildren().addAll(btnActualizar, btnEliminar, btnCancelar);

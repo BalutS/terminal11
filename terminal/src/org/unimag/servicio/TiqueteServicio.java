@@ -38,6 +38,7 @@ public class TiqueteServicio implements ApiOperacionBD<TiqueteDto, Integer> {
 
     public TiqueteServicio() {
         nombrePersistencia = Persistencia.NOMBRE_TIQUETE;
+        asientoServicio = new AsientoServicio();
         try {
             miArchivo = new NioFile(nombrePersistencia);
         } catch (IOException ex) {
@@ -166,18 +167,22 @@ public class TiqueteServicio implements ApiOperacionBD<TiqueteDto, Integer> {
 
     @Override
     public Boolean deleteFrom(Integer codigo) {
-        Boolean correcto = false;
         try {
-            List<String> arreglo;
+            String[] tiqueteInfo = miArchivo.obtenerDatos().get(codigo).split(Persistencia.SEPARADOR_COLUMNAS);
+            int idAsiento = Integer.parseInt(tiqueteInfo[3].trim());
 
-            arreglo = miArchivo.borrarFilaPosicion(codigo);
-            if (!arreglo.isEmpty()) {
-                correcto = true;
+            if (!miArchivo.borrarFilaPosicion(codigo).isEmpty()) {
+                AsientoDto asientoDto = asientoServicio.getOne(idAsiento);
+                if (asientoDto != null) {
+                    asientoDto.setEstadoAsiento(false);
+                    asientoServicio.updateSet(idAsiento, asientoDto, "");
+                }
+                return true;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(BusServicio.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException | NumberFormatException | IndexOutOfBoundsException ex) {
+            Logger.getLogger(TiqueteServicio.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return correcto;
+        return false;
     }
     
     public Map<Integer, Integer> tiquetesActivosPorAsiento() {
@@ -189,7 +194,6 @@ public class TiqueteServicio implements ApiOperacionBD<TiqueteDto, Integer> {
                 cadena = cadena.replace("@", "");
                 String[] columnas = cadena.split(Persistencia.SEPARADOR_COLUMNAS);
                 
-                // Validar que la fila tenga suficientes columnas
                 if (columnas.length < 5) {
                     continue;
                 }
@@ -197,7 +201,6 @@ public class TiqueteServicio implements ApiOperacionBD<TiqueteDto, Integer> {
                 int idAsiento = Integer.parseInt(columnas[3].trim());
                 boolean estadoTiquete = Boolean.valueOf(columnas[4].trim());
 
-                // Solo cuenta tiquetes ACTIVOS
                 if (estadoTiquete) {
                     arrCantidades.put(idAsiento, arrCantidades.getOrDefault(idAsiento, 0) + 1);
                 }
